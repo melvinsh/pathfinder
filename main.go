@@ -76,6 +76,13 @@ func findPageType(client *http.Client, baseUrl string) (string, string) {
 	if checkPageType(client, fullUrl, "Apache Server Status") {
 		return "apache-server-status", fullUrl
 	}
+
+	fullUrl = baseUrl + "/metrics"
+
+	if checkPageType(client, fullUrl, "endpoint=") {
+		return "prometheus", fullUrl
+	}
+
 	return "", ""
 }
 
@@ -114,9 +121,12 @@ func extractUniqueValues(client *http.Client, fullUrl string, pageType string) m
 		case "apache-server-status":
 			regex, _ = regexp.Compile(`(?:GET|OPTIONS)\s+([^\s]+)\s+HTTP`)
 			if matches := regex.FindStringSubmatch(line); len(matches) > 1 {
-				if matches[1] != "*" {
-					uniqueValues[matches[1]] = true
-				}
+				uniqueValues[matches[1]] = true
+			}
+		case "prometheus":
+			regex, _ = regexp.Compile(`endpoint="([^"]+)"`)
+			if matches := regex.FindStringSubmatch(line); len(matches) > 1 {
+				uniqueValues[matches[1]] = true
 			}
 		default:
 			regex = nil
@@ -139,6 +149,8 @@ func sortAndPrintValues(values map[string]bool) {
 	sort.Strings(sortedValues)
 
 	for _, value := range sortedValues {
-		fmt.Println(value)
+		if value != "*" && value != "-" && value != "/" {
+			fmt.Println(value)
+		}
 	}
 }
