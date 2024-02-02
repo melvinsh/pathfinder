@@ -1,5 +1,7 @@
 # pathfinder
 
+![screenshot](https://github.com/melvinsh/pathfinder/assets/1312973/cfe537e3-8602-4913-8cb8-9e299b7a9e69)
+
 ## Overview
 Pathfinder is an open-source tool designed to identify paths from exposed status pages. It focuses on parsing status pages of web servers and services like Apache, PHP-FPM, and Prometheus to extract unique URLs or paths which can be crucial for security assessments or web reconnaissance.
 
