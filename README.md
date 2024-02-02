@@ -15,7 +15,7 @@ Pathfinder is an open-source tool designed to identify paths from exposed status
 ## Installation
 To use Pathfinder, you need to have Go installed on your system. You can install Go from [the official Go website](https://golang.org/dl/). Once Go is installed, you can clone the repository and build the binary:
 
-```bash
+``` shell
 git clone https://github.com/melvinsh/pathfinder.git
 cd pathfinder
 go install
@@ -24,7 +24,7 @@ go install
 ## Usage
 To run Pathfinder, use the following command:
 
-```bash
+``` shell
 pathfinder --url <Base URL of the host>
 ```
 
@@ -32,13 +32,13 @@ pathfinder --url <Base URL of the host>
 
 Example:
 
-```bash
+``` shell
 pathfinder --url http://example.com
 ```
 
 You can easily chain it with `httpx` to filter or perform further recon:
 
-```
+``` shell
 # Get rid of all 404 pages
 pathfinder --url http://example.com | httpx -fc 404
 ```
