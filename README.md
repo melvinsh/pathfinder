@@ -51,4 +51,4 @@ pathfinder --url http://example.com | httpx -fc 404
 5. **Output**: Sorts and prints the unique paths or URLs extracted from the status page.
 
 ## Limitations
-- Pathfinder currently supports PHP-FPM, Apache Server Status pages, and Prometheus metrics endpoints. Further extensions are planned for future releases.
+Pathfinder currently supports PHP-FPM, Apache Server Status pages, and Prometheus metrics endpoints. Further extensions are planned for future releases.
