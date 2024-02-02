@@ -49,8 +49,8 @@ pathfinder --url http://example.com | httpx -fc 404
 1. **Command-Line Argument Parsing**: Parses the base URL of the target host provided by the user.
 2. **HTTP Client Creation**: Initializes an HTTP client to handle requests, with TLS verification disabled for broader compatibility.
 3. **Page Type Identification**: Determines if the target URL exposes PHP-FPM, Apache Server Status, or Prometheus metrics pages.
-4. **Data Extraction**: Extracts unique values based on the identified page type using regular expressions.
-5. **Output**: Sorts and prints the unique paths or URLs extracted from the status page.
+4. **Data Extraction**: Extracts unique paths based on the identified page type using regular expressions.
+5. **Output**: Sorts and prints the unique paths extracted from the status page as URLs.
 
 ## Limitations
 Pathfinder currently supports PHP-FPM, Apache Server Status pages, and Prometheus metrics endpoints. Further extensions are planned for future releases.
