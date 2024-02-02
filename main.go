@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"sort"
@@ -14,14 +15,16 @@ import (
 
 func main() {
 	baseUrl := parseCommandLineArguments()
-	validateBaseUrl(baseUrl)
+	baseUrl = validateBaseUrl(baseUrl)
+
+	fmt.Fprint(os.Stderr, "Target: ", baseUrl, "\n")
 
 	httpClient := createHttpClient()
 
 	pageType, fullUrl := findPageType(httpClient, baseUrl)
 
 	if pageType == "" {
-		fmt.Fprintln(os.Stderr, "host not vulnerable")
+		fmt.Fprintln(os.Stderr, "Host not vulnerable")
 		os.Exit(1)
 	}
 
@@ -38,11 +41,19 @@ func parseCommandLineArguments() string {
 	return *baseUrlPtr
 }
 
-func validateBaseUrl(baseUrl string) {
+func validateBaseUrl(baseUrl string) string {
 	if baseUrl == "" {
 		fmt.Println("Please provide the base URL with the --url flag")
 		os.Exit(1)
 	}
+
+	parsedUrl, err := url.Parse(baseUrl)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid URL format: %v\n", err)
+		os.Exit(1)
+	}
+
+	return fmt.Sprintf("%s://%s", parsedUrl.Scheme, parsedUrl.Host)
 }
 
 func createHttpClient() *http.Client {
