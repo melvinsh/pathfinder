@@ -3,7 +3,7 @@
 ![screenshot](https://github.com/melvinsh/pathfinder/assets/1312973/cfe537e3-8602-4913-8cb8-9e299b7a9e69)
 
 ## Overview
-Pathfinder is an open-source tool designed to identify paths from exposed status pages. It focuses on parsing status pages of web servers and services like Apache, PHP-FPM, and Prometheus to extract unique URLs or paths which can be crucial for security assessments or web reconnaissance.
+Pathfinder is an open-source tool designed to identify paths from exposed status pages. It focuses on parsing status pages of web servers and services like Apache, PHP-FPM, and Prometheus to extract unique paths which can be crucial for security assessments or web reconnaissance.
 
 ## Features
 - Supports extracting paths from:
@@ -11,11 +11,10 @@ Pathfinder is an open-source tool designed to identify paths from exposed status
   - PHP-FPM status pages.
   - Prometheus metrics endpoints.
 - Simple and efficient command-line interface.
-- Sorts and lists unique paths or URLs found in the status pages.
-- Uses Go's native libraries for network and regular expression handling.
+- Sorts and lists unique paths found in the status pages.
 
 ## Installation
-To use Pathfinder, you need to have Go installed on your system. You can install Go from [the official Go website](https://golang.org/dl/). Once Go is installed, you can clone the repository and build the binary:
+To use `pathfinder`, you need to have Go installed on your system. You can install Go from [the official Go website](https://golang.org/dl/). Once Go is installed, you can clone the repository and build the binary:
 
 ``` shell
 git clone https://github.com/melvinsh/pathfinder.git
