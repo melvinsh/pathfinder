@@ -36,6 +36,13 @@ Example:
 pathfinder --url http://example.com
 ```
 
+You can easily chain it with `httpx` to filter or perform further recon:
+
+```
+# Get rid of all 404 pages
+pathfinder --url http://example.com | httpx -fc 404
+```
+
 ## How it Works
 1. **Command-Line Argument Parsing**: Parses the base URL of the target host provided by the user.
 2. **HTTP Client Creation**: Initializes an HTTP client to handle requests, with TLS verification disabled for broader compatibility.

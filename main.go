@@ -13,6 +13,14 @@ import (
 	"strings"
 )
 
+type PageType struct {
+	Name          string
+	UrlSuffix     string
+	DetectRegex   string
+	ExtractRegex  string
+	RegexMatchIdx int
+}
+
 func main() {
 	baseUrl := parseCommandLineArguments()
 	baseUrl = validateBaseUrl(baseUrl)
@@ -21,18 +29,24 @@ func main() {
 
 	httpClient := createHttpClient()
 
-	pageType, fullUrl := findPageType(httpClient, baseUrl)
+	pageTypes := []PageType{
+		{"php-fpm", "/status?full=true", "request URI:", `(script|request URI):\s+([^\s]+)`, 2},
+		{"apache-server-status", "/server-status", "Apache Server Status", `(?:GET|OPTIONS)\s+([^\s]+)\s+HTTP`, 1},
+		{"prometheus", "/metrics", "endpoint=", `endpoint="([^"]+)"`, 1},
+	}
 
-	if pageType == "" {
+	pageType, fullUrl := findPageType(httpClient, baseUrl, pageTypes)
+
+	if pageType.Name == "" {
 		fmt.Fprintln(os.Stderr, "Host not vulnerable")
 		os.Exit(1)
 	}
 
-	fmt.Fprint(os.Stderr, "Discovered page type: ", pageType, "\n")
+	fmt.Fprint(os.Stderr, "Discovered page type: ", pageType.Name, "\n")
 
 	uniqueValues := extractUniqueValues(httpClient, fullUrl, pageType)
 
-	sortAndPrintValues(uniqueValues)
+	sortAndPrintValues(baseUrl, uniqueValues)
 }
 
 func parseCommandLineArguments() string {
@@ -64,37 +78,14 @@ func createHttpClient() *http.Client {
 	}
 }
 
-func performGetRequest(client *http.Client, url string) *http.Response {
-	resp, err := client.Get(url)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "GET request failed: %v\n", err)
-		os.Exit(1)
+func findPageType(client *http.Client, baseUrl string, pageTypes []PageType) (PageType, string) {
+	for _, pt := range pageTypes {
+		fullUrl := baseUrl + pt.UrlSuffix
+		if checkPageType(client, fullUrl, pt.DetectRegex) {
+			return pt, fullUrl
+		}
 	}
-	return resp
-}
-
-func findPageType(client *http.Client, baseUrl string) (string, string) {
-	var fullUrl string
-
-	fullUrl = baseUrl + "/status?full=true"
-
-	if checkPageType(client, fullUrl, "request URI:") {
-		return "php-fpm", fullUrl
-	}
-
-	fullUrl = baseUrl + "/server-status"
-
-	if checkPageType(client, fullUrl, "Apache Server Status") {
-		return "apache-server-status", fullUrl
-	}
-
-	fullUrl = baseUrl + "/metrics"
-
-	if checkPageType(client, fullUrl, "endpoint=") {
-		return "prometheus", fullUrl
-	}
-
-	return "", ""
+	return PageType{}, ""
 }
 
 func checkPageType(client *http.Client, url string, searchString string) bool {
@@ -110,37 +101,28 @@ func checkPageType(client *http.Client, url string, searchString string) bool {
 	return false
 }
 
-func extractUniqueValues(client *http.Client, fullUrl string, pageType string) map[string]bool {
-	var regex *regexp.Regexp
+func performGetRequest(client *http.Client, url string) *http.Response {
+	resp, err := client.Get(url)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "GET request failed: %v\n", err)
+		os.Exit(1)
+	}
+	return resp
+}
 
+func extractUniqueValues(client *http.Client, fullUrl string, pageType PageType) map[string]bool {
 	resp := performGetRequest(client, fullUrl)
 	defer resp.Body.Close()
 
 	scanner := bufio.NewScanner(resp.Body)
 
 	uniqueValues := make(map[string]bool)
+	regex, _ := regexp.Compile(pageType.ExtractRegex)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		switch pageType {
-		case "php-fpm":
-			regex, _ = regexp.Compile(`(script|request URI):\s+([^\s]+)`)
-			if matches := regex.FindStringSubmatch(line); len(matches) > 2 {
-				uniqueValues[matches[2]] = true
-			}
-		case "apache-server-status":
-			regex, _ = regexp.Compile(`(?:GET|OPTIONS)\s+([^\s]+)\s+HTTP`)
-			if matches := regex.FindStringSubmatch(line); len(matches) > 1 {
-				uniqueValues[matches[1]] = true
-			}
-		case "prometheus":
-			regex, _ = regexp.Compile(`endpoint="([^"]+)"`)
-			if matches := regex.FindStringSubmatch(line); len(matches) > 1 {
-				uniqueValues[matches[1]] = true
-			}
-		default:
-			regex = nil
+		if matches := regex.FindStringSubmatch(line); len(matches) > pageType.RegexMatchIdx {
+			uniqueValues[matches[pageType.RegexMatchIdx]] = true
 		}
 	}
 
@@ -152,7 +134,7 @@ func extractUniqueValues(client *http.Client, fullUrl string, pageType string) m
 	return uniqueValues
 }
 
-func sortAndPrintValues(values map[string]bool) {
+func sortAndPrintValues(baseUrl string, values map[string]bool) {
 	var sortedValues []string
 	for value := range values {
 		sortedValues = append(sortedValues, value)
@@ -161,7 +143,7 @@ func sortAndPrintValues(values map[string]bool) {
 
 	for _, value := range sortedValues {
 		if value != "*" && value != "-" && value != "/" {
-			fmt.Println(value)
+			fmt.Println(baseUrl + value)
 		}
 	}
 }
