@@ -25,7 +25,18 @@ func main() {
 	baseUrl := parseCommandLineArguments()
 	baseUrl = validateBaseUrl(baseUrl)
 
-	fmt.Fprint(os.Stderr, "Target: ", baseUrl, "\n")
+	art := `   
+     ___      _   _      __ _           _           
+    / _ \__ _| |_| |__  / _(_)_ __   __| | ___ _ __ 
+   / /_)/ _' | __| '_ \| |_| | '_ \ / _' |/ _ \ '__|
+  / ___/ (_| | |_| | | |  _| | | | | (_| |  __/ |   
+  \/    \__,_|\__|_| |_|_| |_|_| |_|\__,_|\___|_|   
+													
+  
+`
+
+	fmt.Fprint(os.Stderr, art)
+	fmt.Fprint(os.Stderr, "🎯 Target: ", baseUrl, "\n")
 
 	httpClient := createHttpClient()
 
@@ -38,11 +49,12 @@ func main() {
 	pageType, fullUrl := findPageType(httpClient, baseUrl, pageTypes)
 
 	if pageType.Name == "" {
-		fmt.Fprintln(os.Stderr, "Host not vulnerable")
+		fmt.Fprintln(os.Stderr, "🚫 Host not vulnerable")
 		os.Exit(1)
 	}
 
-	fmt.Fprint(os.Stderr, "Discovered page type: ", pageType.Name, "\n")
+	fmt.Fprint(os.Stderr, "🧙 Discovered status page: ", pageType.Name, "\n")
+	fmt.Fprint(os.Stderr, "⏳ Collecting paths...\n\n")
 
 	uniqueValues := extractUniqueValues(httpClient, fullUrl, pageType)
 
