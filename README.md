@@ -1,5 +1,3 @@
-Here's the updated README for the Pathfinder project, including the new feature of supporting Prometheus:
-
 # pathfinder
 
 ## Overview
